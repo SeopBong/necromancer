@@ -17,13 +17,24 @@ const height = 33;
 const scaledWidth = scale * width;
 const scaledHeight = scale * height;
 
-let movingRight = false;
 let characterX = 0;
+let movingRight = false;
+let movingLeft = false;
 
-function drawFrame(frameX, frameY, canvasX, canvasY) { 
+
+function drawFrame(frameX, frameY, canvasX, canvasY,flip = false) {
+  if (flip) {
+    ctx.save();
+    ctx.scale(-1,1);
+  }
+
     ctx.drawImage(img,
                   frameX * width, frameY * height, width, height,
-                  canvasX, canvasY, scaledWidth, scaledHeight);
+                  flip ? -canvasX - scaledWidth : canvasX, canvasY, scaledWidth, scaledHeight);
+                      //canvasX, canvasY, scaledWidth, scaledHeight);
+      if (flip){
+        ctx.restore();
+      }
 }
 let framePosition = function(x,y){
   this.x=x;
@@ -54,16 +65,28 @@ function step() {
     if(movingRight == true){
      characterX += 15; 
     }
+    if(movingLeft == true){
+      characterX -= 15; 
+    }
 
-    drawFrame(currentLoop[currentLoopIndex].x, currentLoop[currentLoopIndex].y, characterX, 0); // 루프시킬곳은 2개이기때문에 하나 제거
+
+    drawFrame(currentLoop[currentLoopIndex].x, currentLoop[currentLoopIndex].y, characterX, 0, movingLeft); // 루프시킬곳은 2개이기때문에 하나 제거
     currentLoopIndex++;
 
     if(movingRight == true) {
       currentLoop = workLoop;
-      if(movingRight = false){
-        currentLoop = idleLoop;
-      }
+      // if(movingRight = false){
+      //   currentLoop = idleLoop;
+      // }
     }
+    if(movingLeft == true) {
+      currentLoop = workLoop;
+      // if(movingLeft = false){
+      //   currentLoop = idleLoop;
+      // }
+    }
+
+
     if (currentLoopIndex >= currentLoop.length) {
       currentLoopIndex = 0;
     }
@@ -76,9 +99,15 @@ function step() {
       movingRight = true;
     }
   })
+  document.addEventListener('keydown', function(e){
+    if (e.code == 'ArrowLeft'){
+      movingLeft = true;
+    }
+  })
   document.addEventListener('keyup', function (e) {
-    if (e.code == 'ArrowRight') {
+    if (e.code == 'ArrowRight' || e.code == 'ArrowLeft') {
         movingRight = false;
+        movingLeft = false;
         currentLoop = idleLoop;
         currentLoopIndex = 0;
     }
